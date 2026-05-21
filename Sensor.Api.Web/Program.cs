@@ -1,4 +1,6 @@
 using Sensor.Api.Data;
+using Sensor.Api.Data.Repositories;
+using Sensor.Api.Data.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ISensorDbContext, SensorDbContext>();
+builder.Services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
 
 var app = builder.Build();
 
