@@ -10,6 +10,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ISensorDbContext, SensorDbContext>();
 builder.Services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
+builder.Services.AddScoped<IControllerRepository, ControllerRepository>();
 
 var app = builder.Build();
 
