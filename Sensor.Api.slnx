@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Sensor.Api.Core/Sensor.Api.Core.csproj" />
+  <Project Path="Sensor.Api.Data/Sensor.Api.Data.csproj" />
+  <Project Path="Sensor.Api.Web/Sensor.Api.Web.csproj" />
+</Solution>
