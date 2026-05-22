@@ -9,10 +9,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ISensorDbContext, SensorDbContext>();
-builder.Services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
+
 builder.Services.AddScoped<IControllerRepository, ControllerRepository>();
 builder.Services.AddScoped<ISensorRepository, SensorRepository>();
-builder.Services.AddScoped<ISensorReadingV2Repository, SensorReadingV2Repository>();
+builder.Services.AddScoped<ISensorMeasurementRepository, SensorMeasurementRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
 var app = builder.Build();
 

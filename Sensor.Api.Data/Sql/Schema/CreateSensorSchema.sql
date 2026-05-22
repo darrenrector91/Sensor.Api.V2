@@ -26,15 +26,16 @@ CREATE TABLE IF NOT EXISTS "Sensors"
         UNIQUE ("ControllerId", "SensorKey")
 );
 
-CREATE TABLE IF NOT EXISTS "SensorReadingsV2"
+CREATE TABLE IF NOT EXISTS "SensorMeasurements"
 (
     "Id" BIGSERIAL PRIMARY KEY,
     "SensorId" INTEGER NOT NULL,
-    "TemperatureC" NUMERIC(8, 3) NULL,
-    "HumidityPercent" NUMERIC(8, 3) NULL,
+    "MeasurementType" TEXT NOT NULL,
+    "Value" TEXT NOT NULL,
+    "Unit" TEXT NOT NULL,
     "CreatedUtc" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT "FK_SensorReadingsV2_Sensors_SensorId"
+    CONSTRAINT "FK_SensorMeasurements_Sensors_SensorId"
         FOREIGN KEY ("SensorId")
         REFERENCES "Sensors" ("Id")
 );
@@ -42,5 +43,5 @@ CREATE TABLE IF NOT EXISTS "SensorReadingsV2"
 CREATE INDEX IF NOT EXISTS "IX_Sensors_ControllerId"
     ON "Sensors" ("ControllerId");
 
-CREATE INDEX IF NOT EXISTS "IX_SensorReadingsV2_SensorId_CreatedUtc"
-    ON "SensorReadingsV2" ("SensorId", "CreatedUtc" DESC);
+CREATE INDEX IF NOT EXISTS "IX_SensorMeasurements_SensorId_CreatedUtc"
+    ON "SensorMeasurements" ("SensorId", "CreatedUtc" DESC);
