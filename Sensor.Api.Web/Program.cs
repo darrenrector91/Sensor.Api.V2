@@ -11,6 +11,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ISensorDbContext, SensorDbContext>();
 builder.Services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
 builder.Services.AddScoped<IControllerRepository, ControllerRepository>();
+builder.Services.AddScoped<ISensorRepository, SensorRepository>();
+builder.Services.AddScoped<ISensorReadingV2Repository, SensorReadingV2Repository>();
 
 var app = builder.Build();
 
