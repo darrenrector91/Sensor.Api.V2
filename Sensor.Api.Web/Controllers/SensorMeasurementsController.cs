@@ -66,4 +66,40 @@ public class SensorMeasurementsController : ControllerBase
             CreatedUtc = measurement.CreatedUtc
         });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateMeasurement(
+    int sensorId,
+    CreateMeasurementRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.MeasurementType))
+        {
+            return BadRequest(new
+            {
+                Status = "error",
+                Message = "MeasurementType is required."
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Value))
+        {
+            return BadRequest(new
+            {
+                Status = "error",
+                Message = "Value is required."
+            });
+        }
+
+        var id = await _sensorMeasurementRepository.CreateAsync(
+            sensorId,
+            request.MeasurementType,
+            request.Value,
+            request.Unit);
+
+        return Ok(new
+        {
+            Id = id,
+            Status = "created"
+        });
+    }
 }
