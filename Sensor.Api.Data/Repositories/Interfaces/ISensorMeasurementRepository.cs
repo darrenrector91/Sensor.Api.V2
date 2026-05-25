@@ -14,5 +14,8 @@ public interface ISensorMeasurementRepository
         int sensorId);
 
     Task<IReadOnlyList<SensorMeasurementQR>> GetBySensorIdAsync(
-        int sensorId);
+        int sensorId,
+        DateTime? fromUtc,
+        DateTime? toUtc,
+        int limit);
 }

@@ -82,31 +82,62 @@ public class SensorMeasurementRepository : ISensorMeasurementRepository
     }
 
     public async Task<IReadOnlyList<SensorMeasurementQR>> GetBySensorIdAsync(
-        int sensorId)
+      int sensorId,
+      DateTime? fromUtc,
+      DateTime? toUtc,
+      int limit)
     {
-        const string sql = """
-            SELECT
-                "Id",
-                "SensorId",
-                "MeasurementType",
-                "Value",
-                "Unit",
-                "CreatedUtc"
-            FROM "SensorMeasurements"
-            WHERE "SensorId" = @SensorId
-            ORDER BY "CreatedUtc" DESC;
+        var sql = """
+        SELECT
+            "Id",
+            "SensorId",
+            "MeasurementType",
+            "Value",
+            "Unit",
+            "CreatedUtc"
+        FROM "SensorMeasurements"
+        WHERE "SensorId" = @SensorId
+        """;
+
+        var parameters = new DynamicParameters();
+        parameters.Add("SensorId", sensorId);
+        parameters.Add("Limit", limit);
+
+        if (fromUtc.HasValue)
+        {
+            sql += """
+            
+              AND "CreatedUtc" >= @FromUtc
             """;
+
+            parameters.Add("FromUtc", fromUtc.Value);
+        }
+
+        if (toUtc.HasValue)
+        {
+            sql += """
+            
+              AND "CreatedUtc" <= @ToUtc
+            """;
+
+            parameters.Add("ToUtc", toUtc.Value);
+        }
+
+        sql += """
+        
+        ORDER BY "CreatedUtc" DESC
+        LIMIT @Limit;
+        """;
 
         using var connection = _sensorDbContext.CreateConnection();
 
         var measurements =
             await connection.QueryAsync<SensorMeasurementQR>(
                 sql,
-                new
-                {
-                    SensorId = sensorId
-                });
+                parameters);
 
-        return measurements.ToList();
+        return measurements
+            .OrderBy(measurement => measurement.CreatedUtc)
+            .ToList();
     }
 }
