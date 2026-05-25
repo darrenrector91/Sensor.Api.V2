@@ -18,11 +18,20 @@ public class SensorMeasurementsController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetMeasurements(
-        int sensorId)
+    int sensorId,
+    [FromQuery] DateTime? fromUtc,
+    [FromQuery] DateTime? toUtc,
+    [FromQuery] int? limit)
     {
+        var safeLimit = Math.Clamp(limit ?? 500, 1, 5000);
+
         var measurements =
             await _sensorMeasurementRepository
-                .GetBySensorIdAsync(sensorId);
+                .GetBySensorIdAsync(
+                    sensorId,
+                    fromUtc,
+                    toUtc,
+                    safeLimit);
 
         var response =
             measurements.Select(measurement =>
