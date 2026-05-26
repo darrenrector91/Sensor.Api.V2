@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Sensor.Api.Data.Repositories.Interfaces;
 using Sensor.Api.Web.Models;
+using Sensor.Api.Web.Services.Interfaces;
 
 namespace Sensor.Api.Web.Controllers;
 
@@ -8,53 +8,33 @@ namespace Sensor.Api.Web.Controllers;
 [Route("api/sensors/{sensorId:int}/measurements")]
 public class SensorMeasurementsController : ControllerBase
 {
-    private readonly ISensorMeasurementRepository _sensorMeasurementRepository;
+    private readonly ISensorMeasurementService sensorMeasurementService;
 
-    public SensorMeasurementsController(
-        ISensorMeasurementRepository sensorMeasurementRepository)
+    public SensorMeasurementsController(ISensorMeasurementService sensorMeasurementService)
     {
-        _sensorMeasurementRepository = sensorMeasurementRepository;
+        this.sensorMeasurementService = sensorMeasurementService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetMeasurements(
-    int sensorId,
-    [FromQuery] DateTime? fromUtc,
-    [FromQuery] DateTime? toUtc,
-    [FromQuery] int? limit)
+        int sensorId,
+        [FromQuery] DateTime? fromUtc,
+        [FromQuery] DateTime? toUtc,
+        [FromQuery] int? limit)
     {
-        var safeLimit = Math.Clamp(limit ?? 500, 1, 5000);
+        var measurements = await sensorMeasurementService.GetMeasurementsAsync(
+            sensorId,
+            fromUtc,
+            toUtc,
+            limit);
 
-        var measurements =
-            await _sensorMeasurementRepository
-                .GetBySensorIdAsync(
-                    sensorId,
-                    fromUtc,
-                    toUtc,
-                    safeLimit);
-
-        var response =
-            measurements.Select(measurement =>
-                new SensorMeasurementResponse
-                {
-                    Id = measurement.Id,
-                    SensorId = measurement.SensorId,
-                    MeasurementType = measurement.MeasurementType,
-                    Value = measurement.Value,
-                    Unit = measurement.Unit,
-                    CreatedUtc = measurement.CreatedUtc
-                });
-
-        return Ok(response);
+        return Ok(measurements);
     }
 
     [HttpGet("latest")]
-    public async Task<IActionResult> GetLatestMeasurement(
-        int sensorId)
+    public async Task<IActionResult> GetLatestMeasurement(int sensorId)
     {
-        var measurement =
-            await _sensorMeasurementRepository
-                .GetLatestBySensorIdAsync(sensorId);
+        var measurement = await sensorMeasurementService.GetLatestMeasurementAsync(sensorId);
 
         if (measurement is null)
         {
@@ -65,50 +45,33 @@ public class SensorMeasurementsController : ControllerBase
             });
         }
 
-        return Ok(new SensorMeasurementResponse
-        {
-            Id = measurement.Id,
-            SensorId = measurement.SensorId,
-            MeasurementType = measurement.MeasurementType,
-            Value = measurement.Value,
-            Unit = measurement.Unit,
-            CreatedUtc = measurement.CreatedUtc
-        });
+        return Ok(measurement);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateMeasurement(
-    int sensorId,
-    CreateMeasurementRequest request)
+        int sensorId,
+        CreateMeasurementRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.MeasurementType))
+        try
+        {
+            var id = await sensorMeasurementService.CreateMeasurementAsync(
+                sensorId,
+                request);
+
+            return Ok(new
+            {
+                Id = id,
+                Status = "created"
+            });
+        }
+        catch (ArgumentException exception)
         {
             return BadRequest(new
             {
                 Status = "error",
-                Message = "MeasurementType is required."
+                Message = exception.Message
             });
         }
-
-        if (string.IsNullOrWhiteSpace(request.Value))
-        {
-            return BadRequest(new
-            {
-                Status = "error",
-                Message = "Value is required."
-            });
-        }
-
-        var id = await _sensorMeasurementRepository.CreateAsync(
-            sensorId,
-            request.MeasurementType,
-            request.Value,
-            request.Unit);
-
-        return Ok(new
-        {
-            Id = id,
-            Status = "created"
-        });
     }
 }

@@ -1,6 +1,6 @@
 namespace Sensor.Api.Data.QueryResults;
 
-public sealed class CreateMeasurementTypeRequestQR
+public sealed class CreateMeasurementTypeQR
 {
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;

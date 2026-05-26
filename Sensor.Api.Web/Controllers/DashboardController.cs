@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Sensor.Api.Data.Repositories.Interfaces;
-using Sensor.Api.Web.Models;
+using Sensor.Api.Web.Services.Interfaces;
 
 namespace Sensor.Api.Web.Controllers;
 
@@ -8,35 +7,18 @@ namespace Sensor.Api.Web.Controllers;
 [Route("api/dashboard")]
 public class DashboardController : ControllerBase
 {
-    private readonly IDashboardRepository _dashboardRepository;
+    private readonly IDashboardService dashboardService;
 
-    public DashboardController(IDashboardRepository dashboardRepository)
+    public DashboardController(IDashboardService dashboardService)
     {
-        _dashboardRepository = dashboardRepository;
+        this.dashboardService = dashboardService;
     }
 
     [HttpGet("measurements")]
     public async Task<IActionResult> GetMeasurements()
     {
-        var measurements = await _dashboardRepository.GetMeasurementsAsync();
+        var measurements = await dashboardService.GetMeasurementsAsync();
 
-        var response = measurements.Select(measurement =>
-            new DashboardMeasurementResponse
-            {
-                ControllerId = measurement.ControllerId,
-                ControllerKey = measurement.ControllerKey,
-                ControllerName = measurement.ControllerName,
-                Location = measurement.Location,
-                SensorId = measurement.SensorId,
-                SensorKey = measurement.SensorKey,
-                SensorName = measurement.SensorName,
-                SensorType = measurement.SensorType,
-                MeasurementType = measurement.MeasurementType,
-                Value = measurement.Value,
-                Unit = measurement.Unit,
-                CreatedUtc = measurement.CreatedUtc
-            });
-
-        return Ok(response);
+        return Ok(measurements);
     }
 }

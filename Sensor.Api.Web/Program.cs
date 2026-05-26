@@ -1,4 +1,7 @@
 using Sensor.Api.Data;
+using Sensor.Api.Web.Services;
+using Sensor.Api.Web.Services.Interfaces;
+
 using Sensor.Api.Data.Repositories;
 using Sensor.Api.Data.Repositories.Interfaces;
 
@@ -30,6 +33,12 @@ builder.Services.AddScoped<ISensorRepository, SensorRepository>();
 builder.Services.AddScoped<ISensorMeasurementRepository, SensorMeasurementRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IMeasurementTypeRepository, MeasurementTypeRepository>();
+
+builder.Services.AddScoped<IControllerService, ControllerService>();
+builder.Services.AddScoped<ISensorService, SensorService>();
+builder.Services.AddScoped<ISensorMeasurementService, SensorMeasurementService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IMeasurementTypeService, MeasurementTypeService>();
 
 var app = builder.Build();
 

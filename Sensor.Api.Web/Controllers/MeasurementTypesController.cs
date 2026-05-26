@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Sensor.Api.Data.QueryResults;
-using Sensor.Api.Data.Repositories.Interfaces;
+using Sensor.Api.Web.Services.Interfaces;
 
 namespace Sensor.Api.Web.Controllers;
 
@@ -8,29 +8,36 @@ namespace Sensor.Api.Web.Controllers;
 [Route("api/measurement-types")]
 public sealed class MeasurementTypesController : ControllerBase
 {
-    private readonly IMeasurementTypeRepository measurementTypeRepository;
+    private readonly IMeasurementTypeService measurementTypeService;
 
-    public MeasurementTypesController(IMeasurementTypeRepository measurementTypeRepository)
+    public MeasurementTypesController(IMeasurementTypeService measurementTypeService)
     {
-        this.measurementTypeRepository = measurementTypeRepository;
+        this.measurementTypeService = measurementTypeService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MeasurementTypeQR>>> GetMeasurementTypes()
     {
-        var measurementTypes = await measurementTypeRepository.GetMeasurementTypesAsync();
+        var measurementTypes = await measurementTypeService.GetMeasurementTypesAsync();
 
         return Ok(measurementTypes);
     }
 
     [HttpPost]
-    public async Task<ActionResult<MeasurementTypeQR>> CreateMeasurementType(CreateMeasurementTypeRequestQR request)
+    public async Task<ActionResult<MeasurementTypeQR>> CreateMeasurementType(CreateMeasurementTypeQR request)
     {
-        var measurementType = await measurementTypeRepository.CreateMeasurementTypeAsync(request);
+        try
+        {
+            var measurementType = await measurementTypeService.CreateMeasurementTypeAsync(request);
 
-        return CreatedAtAction(
-            nameof(GetMeasurementTypes),
-            new { id = measurementType.Id },
-            measurementType);
+            return CreatedAtAction(
+                nameof(GetMeasurementTypes),
+                new { id = measurementType.Id },
+                measurementType);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception.Message);
+        }
     }
 }

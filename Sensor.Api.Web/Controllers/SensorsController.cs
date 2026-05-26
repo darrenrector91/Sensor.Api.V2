@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Sensor.Api.Data.Repositories.Interfaces;
-using Sensor.Api.Web.Models;
+using Sensor.Api.Web.Services.Interfaces;
 
 namespace Sensor.Api.Web.Controllers;
 
@@ -8,29 +7,18 @@ namespace Sensor.Api.Web.Controllers;
 [Route("api/controllers/{controllerId:int}/sensors")]
 public class SensorsController : ControllerBase
 {
-    private readonly ISensorRepository _sensorRepository;
+    private readonly ISensorService sensorService;
 
-    public SensorsController(ISensorRepository sensorRepository)
+    public SensorsController(ISensorService sensorService)
     {
-        _sensorRepository = sensorRepository;
+        this.sensorService = sensorService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetSensorsByControllerId(int controllerId)
     {
-        var sensors = await _sensorRepository.GetByControllerIdAsync(controllerId);
+        var sensors = await sensorService.GetSensorsByControllerIdAsync(controllerId);
 
-        var response = sensors.Select(sensor => new SensorResponse
-        {
-            Id = sensor.Id,
-            ControllerId = sensor.ControllerId,
-            SensorKey = sensor.SensorKey,
-            Name = sensor.Name,
-            SensorType = sensor.SensorType,
-            IsActive = sensor.IsActive,
-            CreatedUtc = sensor.CreatedUtc
-        });
-
-        return Ok(response);
+        return Ok(sensors);
     }
 }
