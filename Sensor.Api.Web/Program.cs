@@ -29,6 +29,7 @@ builder.Services.AddScoped<IControllerRepository, ControllerRepository>();
 builder.Services.AddScoped<ISensorRepository, SensorRepository>();
 builder.Services.AddScoped<ISensorMeasurementRepository, SensorMeasurementRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<IMeasurementTypeRepository, MeasurementTypeRepository>();
 
 var app = builder.Build();
 
