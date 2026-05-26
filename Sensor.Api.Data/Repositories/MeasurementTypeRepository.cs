@@ -39,7 +39,7 @@ public sealed class MeasurementTypeRepository : IMeasurementTypeRepository
         return await connection.QueryAsync<MeasurementTypeQR>(sql);
     }
 
-    public async Task<MeasurementTypeQR> CreateMeasurementTypeAsync(CreateMeasurementTypeRequestQR request)
+    public async Task<MeasurementTypeQR> CreateMeasurementTypeAsync(CreateMeasurementTypeQR request)
     {
         const string sql = """
             INSERT INTO public."MeasurementTypes"

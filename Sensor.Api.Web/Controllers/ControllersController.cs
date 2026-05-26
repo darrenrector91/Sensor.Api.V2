@@ -1,36 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
-using Sensor.Api.Data.Repositories.Interfaces;
-using Sensor.Api.Web.Models;
+using Sensor.Api.Data.QueryResults;
+using Sensor.Api.Web.Services.Interfaces;
 
 namespace Sensor.Api.Web.Controllers;
 
 [ApiController]
 [Route("api/controllers")]
-public class ControllersController : ControllerBase
+public sealed class ControllersController : ControllerBase
 {
-    private readonly IControllerRepository _controllerRepository;
+    private readonly IControllerService controllerService;
 
-    public ControllersController(
-        IControllerRepository controllerRepository)
+    public ControllersController(IControllerService controllerService)
     {
-        _controllerRepository = controllerRepository;
+        this.controllerService = controllerService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetControllers()
+    public async Task<ActionResult<IEnumerable<ControllerQR>>> GetControllers()
     {
-        var controllers = await _controllerRepository.GetAllAsync();
+        var controllers = await controllerService.GetControllersAsync();
 
-        var response = controllers.Select(controller => new ControllerResponse
-        {
-            Id = controller.Id,
-            ControllerKey = controller.ControllerKey,
-            Name = controller.Name,
-            Location = controller.Location,
-            IsActive = controller.IsActive,
-            CreatedUtc = controller.CreatedUtc
-        });
-
-        return Ok(response);
+        return Ok(controllers);
     }
 }
