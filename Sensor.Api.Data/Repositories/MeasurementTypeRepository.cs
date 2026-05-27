@@ -6,11 +6,11 @@ namespace Sensor.Api.Data.Repositories;
 
 public sealed class MeasurementTypeRepository : IMeasurementTypeRepository
 {
-    private readonly ISensorDbContext sensorDbContext;
+    private readonly IDbContext databaseContext;
 
-    public MeasurementTypeRepository(ISensorDbContext sensorDbContext)
+    public MeasurementTypeRepository(IDbContext databaseContext)
     {
-        this.sensorDbContext = sensorDbContext;
+        this.databaseContext = databaseContext;
     }
 
     public async Task<IEnumerable<MeasurementTypeQR>> GetMeasurementTypesAsync()
@@ -34,7 +34,7 @@ public sealed class MeasurementTypeRepository : IMeasurementTypeRepository
             ORDER BY "Priority", "DisplayName";
             """;
 
-        using var connection = sensorDbContext.CreateConnection();
+        using var connection = databaseContext.CreateConnection();
 
         return await connection.QueryAsync<MeasurementTypeQR>(sql);
     }
@@ -81,7 +81,7 @@ public sealed class MeasurementTypeRepository : IMeasurementTypeRepository
                 "CreatedUtc";
             """;
 
-        using var connection = sensorDbContext.CreateConnection();
+        using var connection = databaseContext.CreateConnection();
 
         return await connection.QuerySingleAsync<MeasurementTypeQR>(sql, request);
     }

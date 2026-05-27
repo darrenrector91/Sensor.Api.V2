@@ -2,7 +2,7 @@ using System.Data;
 
 namespace Sensor.Api.Data;
 
-public interface ISensorDbContext
+public interface IDbContext
 {
     IDbConnection CreateConnection();
 }

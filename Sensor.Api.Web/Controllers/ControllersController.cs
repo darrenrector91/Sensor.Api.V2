@@ -22,4 +22,38 @@ public sealed class ControllersController : ControllerBase
 
         return Ok(controllers);
     }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ControllerQR>> GetControllerById(int id)
+    {
+        var controller = await controllerService.GetControllerByIdAsync(id);
+
+        if (controller is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(controller);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<int>> CreateController(CreateControllerQR request)
+    {
+        var id = await controllerService.CreateControllerAsync(request);
+
+        return CreatedAtAction(nameof(GetControllerById), new { id }, id);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateController(int id, UpdateControllerQR request)
+    {
+        var updated = await controllerService.UpdateControllerAsync(id, request);
+
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }
