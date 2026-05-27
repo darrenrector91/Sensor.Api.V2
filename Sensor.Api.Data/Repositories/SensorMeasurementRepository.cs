@@ -6,12 +6,12 @@ namespace Sensor.Api.Data.Repositories;
 
 public class SensorMeasurementRepository : ISensorMeasurementRepository
 {
-    private readonly ISensorDbContext _sensorDbContext;
+    private readonly IDbContext _databaseContext;
 
     public SensorMeasurementRepository(
-        ISensorDbContext sensorDbContext)
+        IDbContext databaseContext)
     {
-        _sensorDbContext = sensorDbContext;
+        _databaseContext = databaseContext;
     }
 
     public async Task<long> CreateAsync(
@@ -40,7 +40,7 @@ public class SensorMeasurementRepository : ISensorMeasurementRepository
             RETURNING "Id";
             """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         return await connection.ExecuteScalarAsync<long>(
             sql,
@@ -71,7 +71,7 @@ public class SensorMeasurementRepository : ISensorMeasurementRepository
             LIMIT 1;
             """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         return await connection.QuerySingleOrDefaultAsync<SensorMeasurementQR>(
             sql,
@@ -129,7 +129,7 @@ public class SensorMeasurementRepository : ISensorMeasurementRepository
         LIMIT @Limit;
         """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         var measurements =
             await connection.QueryAsync<SensorMeasurementQR>(

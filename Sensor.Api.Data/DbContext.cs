@@ -4,11 +4,11 @@ using Npgsql;
 
 namespace Sensor.Api.Data;
 
-public sealed class SensorDbContext : ISensorDbContext
+public sealed class DbContext : IDbContext
 {
     private readonly string _connectionString;
 
-    public SensorDbContext(IConfiguration configuration)
+    public DbContext(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'Default' was not found.");

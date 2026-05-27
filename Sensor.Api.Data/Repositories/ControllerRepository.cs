@@ -6,28 +6,30 @@ namespace Sensor.Api.Data.Repositories;
 
 public class ControllerRepository : IControllerRepository
 {
-    private readonly ISensorDbContext _sensorDbContext;
+    private readonly IDbContext _databaseContext;
 
-    public ControllerRepository(ISensorDbContext sensorDbContext)
+    public ControllerRepository(IDbContext databaseContext)
     {
-        _sensorDbContext = sensorDbContext;
+        _databaseContext = databaseContext;
     }
 
     public async Task<IReadOnlyList<ControllerQR>> GetAllAsync()
     {
         const string sql = """
             SELECT
-                "Id",
-                "ControllerKey",
-                "Name",
-                "Location",
-                "IsActive",
-                "CreatedUtc"
-            FROM "Controllers"
-            ORDER BY "Name";
+                c."Id",
+                c."ControllerKey",
+                c."Name",
+                l."Name" AS "Location",
+                c."LocationId",
+                c."IsActive",
+                c."CreatedUtc"
+            FROM "Controllers" c
+            LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
+            ORDER BY c."Name";
             """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         var controllers = await connection.QueryAsync<ControllerQR>(sql);
 
@@ -38,20 +40,61 @@ public class ControllerRepository : IControllerRepository
     {
         const string sql = """
             SELECT
-                "Id",
-                "ControllerKey",
-                "Name",
-                "Location",
-                "IsActive",
-                "CreatedUtc"
-            FROM "Controllers"
-            WHERE "Id" = @Id;
+                c."Id",
+                c."ControllerKey",
+                c."Name",
+                l."Name" AS "Location",
+                c."LocationId",
+                c."IsActive",
+                c."CreatedUtc"
+            FROM "Controllers" c
+            LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
+            WHERE c."Id" = @Id;
             """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         return await connection.QuerySingleOrDefaultAsync<ControllerQR>(
             sql,
             new { Id = id });
+    }
+
+    public async Task<int> CreateAsync(CreateControllerQR request)
+    {
+        const string sql = """
+            INSERT INTO "Controllers" ("ControllerKey", "Name", "LocationId")
+            VALUES (@ControllerKey, @Name, @LocationId)
+            RETURNING "Id";
+            """;
+
+        using var connection = _databaseContext.CreateConnection();
+
+        return await connection.ExecuteScalarAsync<int>(sql, request);
+    }
+
+    public async Task<bool> UpdateAsync(int id, UpdateControllerQR request)
+    {
+        const string sql = """
+            UPDATE "Controllers"
+            SET
+                "ControllerKey" = @ControllerKey,
+                "Name" = @Name,
+                "LocationId" = @LocationId,
+                "IsActive" = @IsActive
+            WHERE "Id" = @Id;
+            """;
+
+        using var connection = _databaseContext.CreateConnection();
+
+        var rowsAffected = await connection.ExecuteAsync(sql, new
+        {
+            Id = id,
+            request.ControllerKey,
+            request.Name,
+            request.LocationId,
+            request.IsActive
+        });
+
+        return rowsAffected > 0;
     }
 }

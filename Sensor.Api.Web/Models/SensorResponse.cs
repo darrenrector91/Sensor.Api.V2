@@ -6,6 +6,10 @@ public class SensorResponse
 
     public int ControllerId { get; set; }
 
+    public int? LocationId { get; set; }
+
+    public string? Location { get; set; }
+
     public string SensorKey { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;

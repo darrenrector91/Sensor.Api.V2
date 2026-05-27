@@ -8,11 +8,11 @@ namespace Sensor.Api.Web.Controllers;
 [Route("api/status")]
 public class StatusController : ControllerBase
 {
-    private readonly ISensorDbContext _sensorDbContext;
+    private readonly IDbContext _databaseContext;
 
-    public StatusController(ISensorDbContext sensorDbContext)
+    public StatusController(IDbContext databaseContext)
     {
-        _sensorDbContext = sensorDbContext;
+        _databaseContext = databaseContext;
     }
 
     [HttpGet]
@@ -32,7 +32,7 @@ public class StatusController : ControllerBase
     {
         try
         {
-            using var connection = _sensorDbContext.CreateConnection();
+            using var connection = _databaseContext.CreateConnection();
 
             var result = await connection.ExecuteScalarAsync<int>("SELECT 1;");
 

@@ -1,14 +1,10 @@
 namespace Sensor.Api.Data.QueryResults;
 
-public class SensorQR
+public class UpdateSensorQR
 {
-    public int Id { get; set; }
-
     public int ControllerId { get; set; }
 
     public int? LocationId { get; set; }
-
-    public string? Location { get; set; }
 
     public string SensorKey { get; set; } = string.Empty;
 
@@ -17,6 +13,4 @@ public class SensorQR
     public string SensorType { get; set; } = string.Empty;
 
     public bool IsActive { get; set; }
-
-    public DateTime CreatedUtc { get; set; }
 }

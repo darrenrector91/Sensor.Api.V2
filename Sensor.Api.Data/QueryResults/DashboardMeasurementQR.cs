@@ -24,5 +24,17 @@ public class DashboardMeasurementQR
 
     public string Unit { get; set; } = string.Empty;
 
+    public string? Icon { get; set; }
+
+    public string? Color { get; set; }
+
+    public string? DisplayStyle { get; set; }
+
+    public string? ChartGroup { get; set; }
+
+    public int? Priority { get; set; }
+
+    public string? CssClass { get; set; }
+
     public DateTime CreatedUtc { get; set; }
 }

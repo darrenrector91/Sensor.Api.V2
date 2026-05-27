@@ -77,8 +77,8 @@ Sensor.Api/
 │   ├── Sql/
 │   │   └── Schema/
 │   │       └── CreateSensorSchema.sql
-│   ├── ISensorDbContext.cs
-│   └── SensorDbContext.cs
+│   ├── IDbContext.cs
+│   └── DbContext.cs
 ├── Sensor.Api.Web/
 │   ├── Controllers/
 │   ├── Models/

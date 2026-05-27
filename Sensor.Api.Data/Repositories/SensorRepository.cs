@@ -6,30 +6,33 @@ namespace Sensor.Api.Data.Repositories;
 
 public class SensorRepository : ISensorRepository
 {
-    private readonly ISensorDbContext _sensorDbContext;
+    private readonly IDbContext _databaseContext;
 
-    public SensorRepository(ISensorDbContext sensorDbContext)
+    public SensorRepository(IDbContext databaseContext)
     {
-        _sensorDbContext = sensorDbContext;
+        _databaseContext = databaseContext;
     }
 
     public async Task<IReadOnlyList<SensorQR>> GetByControllerIdAsync(int controllerId)
     {
         const string sql = """
             SELECT
-                "Id",
-                "ControllerId",
-                "SensorKey",
-                "Name",
-                "SensorType",
-                "IsActive",
-                "CreatedUtc"
-            FROM "Sensors"
-            WHERE "ControllerId" = @ControllerId
-            ORDER BY "Name";
+                s."Id",
+                s."ControllerId",
+                s."LocationId",
+                l."Name" AS "Location",
+                s."SensorKey",
+                s."Name",
+                s."SensorType",
+                s."IsActive",
+                s."CreatedUtc"
+            FROM "Sensors" s
+            LEFT JOIN "Locations" l ON l."Id" = s."LocationId"
+            WHERE s."ControllerId" = @ControllerId
+            ORDER BY s."Name";
             """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         var sensors = await connection.QueryAsync<SensorQR>(sql, new
         {
@@ -43,22 +46,68 @@ public class SensorRepository : ISensorRepository
     {
         const string sql = """
             SELECT
-                "Id",
-                "ControllerId",
-                "SensorKey",
-                "Name",
-                "SensorType",
-                "IsActive",
-                "CreatedUtc"
-            FROM "Sensors"
-            WHERE "Id" = @Id;
+                s."Id",
+                s."ControllerId",
+                s."LocationId",
+                l."Name" AS "Location",
+                s."SensorKey",
+                s."Name",
+                s."SensorType",
+                s."IsActive",
+                s."CreatedUtc"
+            FROM "Sensors" s
+            LEFT JOIN "Locations" l ON l."Id" = s."LocationId"
+            WHERE s."Id" = @Id;
             """;
 
-        using var connection = _sensorDbContext.CreateConnection();
+        using var connection = _databaseContext.CreateConnection();
 
         return await connection.QuerySingleOrDefaultAsync<SensorQR>(sql, new
         {
             Id = id
         });
+    }
+
+    public async Task<int> CreateAsync(CreateSensorQR request)
+    {
+        const string sql = """
+            INSERT INTO "Sensors" ("ControllerId", "LocationId", "SensorKey", "Name", "SensorType")
+            VALUES (@ControllerId, @LocationId, @SensorKey, @Name, @SensorType)
+            RETURNING "Id";
+            """;
+
+        using var connection = _databaseContext.CreateConnection();
+
+        return await connection.ExecuteScalarAsync<int>(sql, request);
+    }
+
+    public async Task<bool> UpdateAsync(int id, UpdateSensorQR request)
+    {
+        const string sql = """
+            UPDATE "Sensors"
+            SET
+                "ControllerId" = @ControllerId,
+                "LocationId" = @LocationId,
+                "SensorKey" = @SensorKey,
+                "Name" = @Name,
+                "SensorType" = @SensorType,
+                "IsActive" = @IsActive
+            WHERE "Id" = @Id;
+            """;
+
+        using var connection = _databaseContext.CreateConnection();
+
+        var rowsAffected = await connection.ExecuteAsync(sql, new
+        {
+            Id = id,
+            request.ControllerId,
+            request.LocationId,
+            request.SensorKey,
+            request.Name,
+            request.SensorType,
+            request.IsActive
+        });
+
+        return rowsAffected > 0;
     }
 }

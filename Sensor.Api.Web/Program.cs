@@ -26,19 +26,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<ISensorDbContext, SensorDbContext>();
+builder.Services.AddScoped<IDbContext, DbContext>();
 
 builder.Services.AddScoped<IControllerRepository, ControllerRepository>();
 builder.Services.AddScoped<ISensorRepository, SensorRepository>();
 builder.Services.AddScoped<ISensorMeasurementRepository, SensorMeasurementRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IMeasurementTypeRepository, MeasurementTypeRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
 builder.Services.AddScoped<IControllerService, ControllerService>();
 builder.Services.AddScoped<ISensorService, SensorService>();
 builder.Services.AddScoped<ISensorMeasurementService, SensorMeasurementService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IMeasurementTypeService, MeasurementTypeService>();
+
 
 var app = builder.Build();
 
