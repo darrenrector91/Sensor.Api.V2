@@ -15,4 +15,6 @@ public class ControllerQR
     public bool IsActive { get; set; }
 
     public DateTime CreatedUtc { get; set; }
+
+    public int SensorCount { get; set; }
 }

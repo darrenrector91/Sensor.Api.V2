@@ -4,7 +4,7 @@ namespace Sensor.Api.Data.Repositories.Interfaces;
 
 public interface IControllerRepository
 {
-    Task<IReadOnlyList<ControllerQR>> GetAllAsync();
+    Task<IReadOnlyList<ControllerQR>> GetAllControllersAsync();
 
     Task<ControllerQR?> GetByIdAsync(int id);
 
