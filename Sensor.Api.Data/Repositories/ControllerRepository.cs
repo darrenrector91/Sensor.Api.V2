@@ -13,20 +13,30 @@ public class ControllerRepository : IControllerRepository
         _databaseContext = databaseContext;
     }
 
-    public async Task<IReadOnlyList<ControllerQR>> GetAllAsync()
+    public async Task<IReadOnlyList<ControllerQR>> GetAllControllersAsync()
     {
         const string sql = """
             SELECT
                 c."Id",
                 c."ControllerKey",
                 c."Name",
-                l."Name" AS "Location",
                 c."LocationId",
+                l."Name" AS "Location",
+                c."IsActive",
+                c."CreatedUtc",
+                COUNT(s."Id") AS "SensorCount"
+            FROM public."Controllers" c
+            LEFT JOIN public."Locations" l ON l."Id" = c."LocationId"
+            LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
+            GROUP BY
+                c."Id",
+                c."ControllerKey",
+                c."Name",
+                c."LocationId",
+                l."Name",
                 c."IsActive",
                 c."CreatedUtc"
-            FROM "Controllers" c
-            LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
-            ORDER BY c."Name";
+            ORDER BY c."CreatedUtc" DESC;
             """;
 
         using var connection = _databaseContext.CreateConnection();

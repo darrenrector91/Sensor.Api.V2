@@ -15,7 +15,7 @@ public sealed class ControllerService : IControllerService
 
     public async Task<IReadOnlyList<ControllerQR>> GetControllersAsync()
     {
-        return await controllerRepository.GetAllAsync();
+        return await controllerRepository.GetAllControllersAsync();
     }
 
     public async Task<ControllerQR?> GetControllerByIdAsync(int id)
