@@ -46,6 +46,24 @@ public class ControllerRepository : IControllerRepository
         return controllers.ToList();
     }
 
+    public async Task<int> GetControllerKey(int id)
+    {
+        const string sql = """
+            SELECT COALESCE(
+                MAX(CAST(SUBSTRING("ControllerKey" FROM '^[a-z0-9-]+-([0-9]+)$') AS INTEGER)),
+                0
+            ) + 1
+            FROM public."Controllers"
+            WHERE "LocationId" = @Id;
+            """;
+
+        using var connection = _databaseContext.CreateConnection();
+
+        var result = await connection.ExecuteScalarAsync<int?>(sql, new { Id = id });
+
+        return result ?? 0;
+    }
+
     public async Task<ControllerQR?> GetByIdAsync(int id)
     {
         const string sql = """
