@@ -64,6 +64,27 @@ public class ControllerRepository : IControllerRepository
         return result ?? 0;
     }
 
+    public async Task<int> GetNextControllerSequenceNumberAsync(int locationId)
+    {
+        const string sql = """
+        SELECT COALESCE(
+            MAX(
+                CAST(
+                    SUBSTRING(c."ControllerKey" FROM '-([0-9]+)$')
+                    AS INTEGER
+                )
+            ),
+            0
+        )
+        FROM public."Controllers" c
+        WHERE c."LocationId" = @LocationId;
+        """;
+
+        using var connection = _databaseContext.CreateConnection();
+
+        return await connection.ExecuteScalarAsync<int>(sql, new { LocationId = locationId });
+    }
+
     public async Task<ControllerQR?> GetByIdAsync(int id)
     {
         const string sql = """

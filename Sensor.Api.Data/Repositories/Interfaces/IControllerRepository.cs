@@ -13,4 +13,6 @@ public interface IControllerRepository
     Task<bool> UpdateAsync(int id, UpdateControllerQR request);
 
     Task<int> GetControllerKey(int id);
+
+    Task<int> GetNextControllerSequenceNumberAsync(int locationId);
 }

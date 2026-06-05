@@ -16,7 +16,9 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "http://localhost:4200",
-                "http://192.168.5.103")
+                "http://192.168.4.30:4200",
+                "http://192.168.5.103:4200"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -50,9 +52,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(AngularDevCorsPolicy);
-
 app.UseHttpsRedirection();
+
+app.UseCors(AngularDevCorsPolicy);
 
 app.MapControllers();
 

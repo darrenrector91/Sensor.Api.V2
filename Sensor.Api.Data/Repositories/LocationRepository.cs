@@ -18,7 +18,13 @@ public class LocationRepository : ILocationRepository
         using var connection = _dbContext.CreateConnection();
 
         const string sql = """
-            SELECT "Id", "Name", "Description", "Latitude", "Longitude", "CreatedUtc"
+            SELECT 
+            "Id", 
+            "Name", 
+            "Description", 
+            "Latitude", 
+            "Longitude", 
+            "CreatedUtc"
             FROM "Locations"
             ORDER BY "Name";
             """;
@@ -31,7 +37,13 @@ public class LocationRepository : ILocationRepository
         using var connection = _dbContext.CreateConnection();
 
         const string sql = """
-            SELECT "Id", "Name", "Description", "Latitude", "Longitude", "CreatedUtc"
+            SELECT
+             "Id",
+             "Name",
+             "Description",
+             "Latitude",
+             "Longitude",
+             "CreatedUtc"
             FROM "Locations"
             WHERE "Id" = @Id;
             """;
