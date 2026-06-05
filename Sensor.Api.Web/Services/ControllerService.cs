@@ -15,6 +15,8 @@ public sealed class ControllerService : IControllerService
 
     public async Task<IReadOnlyList<ControllerQR>> GetControllersAsync()
     {
+
+
         return await controllerRepository.GetAllControllersAsync();
     }
 
@@ -25,6 +27,15 @@ public sealed class ControllerService : IControllerService
 
     public async Task<int> CreateControllerAsync(CreateControllerQR request)
     {
+        if (request.LocationId is not int locationId)
+        {
+            throw new System.ArgumentException("LocationId is required", nameof(request.LocationId));
+        }
+
+        var keyNumber = await controllerRepository.GetControllerKey(locationId);
+
+        request.ControllerKey = $"{request.Name.ToLowerInvariant()}-{keyNumber + 1}";
+
         return await controllerRepository.CreateAsync(request);
     }
 

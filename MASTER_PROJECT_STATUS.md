@@ -378,6 +378,117 @@ Runtime:
 
 ---
 
+# Raspberry Pi Deployment Workflow
+
+## Frontend Deployment
+
+Angular is built locally on the Mac and deployed to the Raspberry Pi through Nginx.
+
+Build frontend:
+
+```bash
+ng test --watch=false
+npm run build
+```
+
+Build output:
+
+```text
+/Users/darrenrector/Documents/Projects/SensorDashboard/Sensor.UI/dist/Sensor.UI/browser
+```
+
+Copy to Pi staging area:
+
+```bash
+rsync -av --delete /Users/darrenrector/Documents/Projects/SensorDashboard/Sensor.UI/dist/Sensor.UI/browser/ drector@192.168.5.103:/tmp/sensor-ui/
+```
+
+Deploy on Pi:
+
+```bash
+sudo rsync -av --delete /tmp/sensor-ui/ /var/www/sensor-dashboard/
+sudo chown -R www-data:www-data /var/www/sensor-dashboard
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Frontend web root:
+
+- /var/www/sensor-dashboard
+
+---
+
+## Backend Deployment
+
+Copy source from Mac:
+
+```bash
+rsync -av --delete --exclude ".git" --exclude "bin" --exclude "obj" /Users/darrenrector/Documents/Projects/SensorDashboard/Sensor.Api/ drector@192.168.5.103:/home/drector/projects/Sensor.Api/
+```
+
+Verify copy:
+
+```bash
+find /home/drector/projects/Sensor.Api -type f -mmin -10 | sort
+```
+
+Build:
+
+```bash
+cd ~/projects/Sensor.Api
+dotnet build ./Sensor.Api.Web/Sensor.Api.Web.csproj
+```
+
+Important:
+
+- Sensor.Api.slnx exists instead of a traditional .sln.
+- Use the explicit project build command above.
+
+Publish:
+
+```bash
+dotnet publish ./Sensor.Api.Web/Sensor.Api.Web.csproj -c Release -o /home/drector/apps/sensor-api
+```
+
+Restart:
+
+```bash
+sudo systemctl restart sensor-api
+sudo systemctl status sensor-api --no-pager
+```
+
+---
+
+## Deployment Verification
+
+Swagger:
+
+- http://192.168.5.103:5278/swagger
+
+Dashboard:
+
+- http://192.168.5.103/
+
+Verify new endpoints appear in Swagger before testing from Angular.
+
+---
+
+## Deployment Lesson Learned
+
+Location Create troubleshooting confirmed that a frontend deployment can succeed while new functionality still fails if the backend deployment was skipped.
+
+When adding new API endpoints:
+
+1. Deploy frontend.
+2. Deploy backend.
+3. Restart sensor-api.
+4. Verify endpoint appears in Swagger.
+5. Test from Angular.
+
+A 404 on a newly-added endpoint should trigger deployment verification before frontend debugging.
+
+---
+
 # Current ESP32 Integration
 
 ESP32 currently:
@@ -419,6 +530,25 @@ Frontend direction:
 - eliminate hardcoded frontend display config
 
 The backend APIs already support this direction.
+
+---
+
+# Current Angular Admin Status
+
+Completed:
+
+- Location Create workflow
+
+In Progress:
+
+- Controller Create workflow
+- Sensor Create workflow
+
+Current focus:
+
+- Location dropdown integration
+- Controller selection integration
+- MeasurementTypes-driven rendering
 
 ---
 

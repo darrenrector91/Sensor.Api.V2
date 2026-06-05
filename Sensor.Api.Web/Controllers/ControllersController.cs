@@ -36,12 +36,13 @@ public sealed class ControllersController : ControllerBase
         return Ok(controller);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<int>> CreateController(CreateControllerQR request)
-    {
-        var id = await controllerService.CreateControllerAsync(request);
 
-        return CreatedAtAction(nameof(GetControllerById), new { id }, id);
+    [HttpPost]
+    public async Task<ActionResult> CreateController(CreateControllerQR request)
+    {
+        await controllerService.CreateControllerAsync(request);
+
+        return StatusCode(StatusCodes.Status201Created);
     }
 
     [HttpPut("{id:int}")]

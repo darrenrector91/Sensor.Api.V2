@@ -11,4 +11,6 @@ public interface IControllerRepository
     Task<int> CreateAsync(CreateControllerQR request);
 
     Task<bool> UpdateAsync(int id, UpdateControllerQR request);
+
+    Task<int> GetControllerKey(int id);
 }
