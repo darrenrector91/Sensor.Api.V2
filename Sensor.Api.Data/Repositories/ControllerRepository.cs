@@ -23,19 +23,9 @@ public class ControllerRepository : IControllerRepository
                 c."LocationId",
                 l."Name" AS "Location",
                 c."IsActive",
-                c."CreatedUtc",
-                COUNT(s."Id") AS "SensorCount"
+                c."CreatedUtc"
             FROM public."Controllers" c
             LEFT JOIN public."Locations" l ON l."Id" = c."LocationId"
-            LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
-            GROUP BY
-                c."Id",
-                c."ControllerKey",
-                c."Name",
-                c."LocationId",
-                l."Name",
-                c."IsActive",
-                c."CreatedUtc"
             ORDER BY c."CreatedUtc" DESC;
             """;
 
@@ -85,7 +75,7 @@ public class ControllerRepository : IControllerRepository
         return await connection.ExecuteScalarAsync<int>(sql, new { LocationId = locationId });
     }
 
-    public async Task<ControllerQR?> GetByIdAsync(int id)
+    public async Task<ControllerQR?> GetControllerByIdAsync(int id)
     {
         const string sql = """
             SELECT
@@ -95,10 +85,20 @@ public class ControllerRepository : IControllerRepository
                 l."Name" AS "Location",
                 c."LocationId",
                 c."IsActive",
-                c."CreatedUtc"
+                c."CreatedUtc",
+                COUNT(s."Id") AS "SensorCount"
             FROM "Controllers" c
             LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
-            WHERE c."Id" = @Id;
+            LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
+            WHERE c."Id" = @Id
+            GROUP BY
+                c."Id",
+                c."ControllerKey",
+                c."Name",
+                c."LocationId",
+                l."Name",
+                c."IsActive",
+                c."CreatedUtc" 
             """;
 
         using var connection = _databaseContext.CreateConnection();

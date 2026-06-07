@@ -24,7 +24,7 @@ public sealed class ControllerService : IControllerService
 
     public async Task<ControllerQR?> GetControllerByIdAsync(int id)
     {
-        return await controllerRepository.GetByIdAsync(id);
+        return await controllerRepository.GetControllerByIdAsync(id);
     }
 
     public async Task<int> CreateControllerAsync(CreateControllerQR request)

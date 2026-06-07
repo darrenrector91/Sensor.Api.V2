@@ -6,7 +6,7 @@ public interface IControllerRepository
 {
     Task<IReadOnlyList<ControllerQR>> GetAllControllersAsync();
 
-    Task<ControllerQR?> GetByIdAsync(int id);
+    Task<ControllerQR?> GetControllerByIdAsync(int id);
 
     Task<int> CreateAsync(CreateControllerQR request);
 
