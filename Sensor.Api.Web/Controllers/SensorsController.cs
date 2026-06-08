@@ -5,6 +5,7 @@ using Sensor.Api.Web.Services.Interfaces;
 namespace Sensor.Api.Web.Controllers;
 
 [ApiController]
+[Route("api/sensors")]
 public class SensorsController : ControllerBase
 {
     private readonly ISensorService sensorService;
@@ -14,7 +15,7 @@ public class SensorsController : ControllerBase
         this.sensorService = sensorService;
     }
 
-    [HttpGet("api/sensors")]
+    [HttpGet]
     public async Task<IActionResult> GetSensorsByControllerId([FromQuery] int controllerId)
     {
         var sensors = await sensorService.GetSensorsByControllerIdAsync(controllerId);
@@ -22,7 +23,7 @@ public class SensorsController : ControllerBase
         return Ok(sensors);
     }
 
-    [HttpGet("api/sensors/{id:int}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetSensorById(int id)
     {
         var sensor = await sensorService.GetSensorByIdAsync(id);
@@ -35,7 +36,7 @@ public class SensorsController : ControllerBase
         return Ok(sensor);
     }
 
-    [HttpPost("api/sensors")]
+    [HttpPost]
     public async Task<ActionResult<int>> CreateSensor(CreateSensorQR request)
     {
         var id = await sensorService.CreateSensorAsync(request);
@@ -43,7 +44,7 @@ public class SensorsController : ControllerBase
         return CreatedAtAction(nameof(GetSensorById), new { id }, id);
     }
 
-    [HttpPut("api/sensors/{id:int}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateSensor(int id, UpdateSensorQR request)
     {
         var updated = await sensorService.UpdateSensorAsync(id, request);
