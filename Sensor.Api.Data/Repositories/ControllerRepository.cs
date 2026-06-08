@@ -23,10 +23,20 @@ public class ControllerRepository : IControllerRepository
                 c."LocationId",
                 l."Name" AS "Location",
                 c."IsActive",
-                c."CreatedUtc"
-            FROM public."Controllers" c
-            LEFT JOIN public."Locations" l ON l."Id" = c."LocationId"
-            ORDER BY c."CreatedUtc" DESC;
+                c."CreatedUtc",
+                COUNT(s."Id") AS "SensorCount"
+            FROM "Controllers" c
+            LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
+            LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
+            GROUP BY
+                c."Id",
+                c."ControllerKey",
+                c."Name",
+                c."LocationId",
+                l."Name",
+                c."IsActive",
+                c."CreatedUtc" 
+            ORDER BY c."CreatedUtc" ASC;
             """;
 
         using var connection = _databaseContext.CreateConnection();

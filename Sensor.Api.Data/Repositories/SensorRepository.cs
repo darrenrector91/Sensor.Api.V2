@@ -13,7 +13,7 @@ public class SensorRepository : ISensorRepository
         _databaseContext = databaseContext;
     }
 
-    public async Task<IReadOnlyList<SensorQR>> GetByControllerIdAsync(int controllerId)
+    public async Task<IReadOnlyList<SensorQR>> GetSensorsByControllerIdAsync(int controllerId)
     {
         const string sql = """
             SELECT

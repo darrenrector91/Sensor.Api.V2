@@ -14,8 +14,8 @@ public class SensorsController : ControllerBase
         this.sensorService = sensorService;
     }
 
-    [HttpGet("api/controllers/{controllerId:int}/sensors")]
-    public async Task<IActionResult> GetSensorsByControllerId(int controllerId)
+    [HttpGet("api/sensors")]
+    public async Task<IActionResult> GetSensorsByControllerId([FromQuery] int controllerId)
     {
         var sensors = await sensorService.GetSensorsByControllerIdAsync(controllerId);
 
