@@ -16,7 +16,7 @@ public sealed class SensorService : ISensorService
 
     public async Task<IReadOnlyList<SensorResponse>> GetSensorsByControllerIdAsync(int controllerId)
     {
-        var sensors = await sensorRepository.GetByControllerIdAsync(controllerId);
+        var sensors = await sensorRepository.GetSensorsByControllerIdAsync(controllerId);
 
         return sensors
             .Select(MapToResponse)
