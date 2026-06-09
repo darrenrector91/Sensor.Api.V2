@@ -1,6 +1,6 @@
 # Sensor.Api - MASTER PROJECT STATUS
 
-Last Updated: 2026-05-27
+Last Updated: 2026-06-08
 
 ---
 
@@ -110,10 +110,12 @@ Primary active tables:
 - MeasurementTypes
 - Locations
 
-Legacy / deferred cleanup:
+Removed legacy tables:
 
-- SensorReadings
-- SensorReadingsV2
+- SensorReadings (dropped)
+- SensorReadingsV2 (abandoned and never adopted)
+
+SensorMeasurements is the sole source of truth for sensor measurement data.
 
 ---
 
@@ -510,7 +512,23 @@ Current payload shape:
 Current firmware behavior:
 
 - hardcoded sensorId = 1
-- hourly posting interval
+- hourly posting interval (3600000 ms)
+- temperature and humidity are posted as separate measurements
+
+ESP32 Network Information:
+
+- ESP32 IP: 192.168.4.34
+- Raspberry Pi API: 192.168.5.103
+- API Base URL: http://192.168.5.103:5278
+- Measurements Endpoint: http://192.168.5.103:5278/api/sensors/1/measurements
+
+Validated Behavior:
+
+- ESP32 posts once per hour
+- Temperature and Humidity are stored as separate rows
+- SensorMeasurements contains the active production data
+- Historical 2-minute readings originated from the removed legacy SensorReadings table
+- Current SensorMeasurements data has been verified as hourly
 
 The generalized backend pipeline is already functioning.
 
@@ -579,8 +597,7 @@ Before creating new systems:
 Current technical debt:
 
 - request DTO naming inside QueryResults
-- legacy SensorReadings table
-- SensorReadingsV2 artifacts
+- SensorReadingsV2 artifacts/documentation cleanup
 - hardcoded firmware sensorId
 - frontend partially hardcoded for display metadata
 

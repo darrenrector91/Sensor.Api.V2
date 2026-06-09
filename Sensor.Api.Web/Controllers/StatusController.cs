@@ -10,11 +10,19 @@ public class StatusController : ControllerBase
 {
     private readonly IDbContext _databaseContext;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StatusController"/> class.
+    /// </summary>
+    /// <param name="databaseContext">The database context used to verify database connectivity.</param>
     public StatusController(IDbContext databaseContext)
     {
         _databaseContext = databaseContext;
     }
 
+    /// <summary>
+    /// Gets the current application status.
+    /// </summary>
+    /// <returns>An <see cref="IActionResult"/> containing status information.</returns>
     [HttpGet]
     public IActionResult GetStatus()
     {
@@ -27,6 +35,10 @@ public class StatusController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Gets the status of the database connection.
+    /// </summary>
+    /// <returns>An <see cref="IActionResult"/> containing database connectivity status.</returns>
     [HttpGet("database")]
     public async Task<IActionResult> GetDatabaseStatus()
     {

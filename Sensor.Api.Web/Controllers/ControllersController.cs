@@ -10,11 +10,19 @@ public sealed class ControllersController : ControllerBase
 {
     private readonly IControllerService controllerService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ControllersController"/> class.
+    /// </summary>
+    /// <param name="controllerService">The controller service used to manage controller data.</param>
     public ControllersController(IControllerService controllerService)
     {
         this.controllerService = controllerService;
     }
 
+    /// <summary>
+    /// Gets all controllers.
+    /// </summary>
+    /// <returns>An <see cref="ActionResult{T}"/> containing the list of controllers.</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ControllerQR>>> GetControllers()
     {
@@ -23,6 +31,11 @@ public sealed class ControllersController : ControllerBase
         return Ok(controllers);
     }
 
+    /// <summary>
+    /// Gets a controller by its identifier.
+    /// </summary>
+    /// <param name="id">The controller identifier.</param>
+    /// <returns>An <see cref="ActionResult{ControllerQR}"/> containing the controller or a NotFound result.</returns>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ControllerQR>> GetControllerById(int id)
     {
@@ -37,6 +50,11 @@ public sealed class ControllersController : ControllerBase
     }
 
 
+    /// <summary>
+    /// Creates a new controller.
+    /// </summary>
+    /// <param name="request">The controller creation request.</param>
+    /// <returns>An <see cref="ActionResult"/> with the created result status.</returns>
     [HttpPost]
     public async Task<ActionResult> CreateController(CreateControllerQR request)
     {
@@ -45,6 +63,12 @@ public sealed class ControllersController : ControllerBase
         return StatusCode(StatusCodes.Status201Created);
     }
 
+    /// <summary>
+    /// Updates an existing controller.
+    /// </summary>
+    /// <param name="id">The controller identifier.</param>
+    /// <param name="request">The updated controller values.</param>
+    /// <returns>An <see cref="IActionResult"/> indicating the update result.</returns>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateController(int id, UpdateControllerQR request)
     {

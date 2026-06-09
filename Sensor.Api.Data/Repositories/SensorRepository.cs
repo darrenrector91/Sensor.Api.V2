@@ -8,11 +8,20 @@ public class SensorRepository : ISensorRepository
 {
     private readonly IDbContext _databaseContext;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SensorRepository"/> class.
+    /// </summary>
+    /// <param name="databaseContext">The database context used to create connections.</param>
     public SensorRepository(IDbContext databaseContext)
     {
         _databaseContext = databaseContext;
     }
 
+    /// <summary>
+    /// Gets all sensors for a specific controller.
+    /// </summary>
+    /// <param name="controllerId">The controller identifier.</param>
+    /// <returns>A read-only list of matching sensor query results.</returns>
     public async Task<IReadOnlyList<SensorQR>> GetSensorsByControllerIdAsync(int controllerId)
     {
         const string sql = """
@@ -42,6 +51,11 @@ public class SensorRepository : ISensorRepository
         return sensors.ToList();
     }
 
+    /// <summary>
+    /// Gets a sensor by its identifier.
+    /// </summary>
+    /// <param name="id">The sensor identifier.</param>
+    /// <returns>The matching sensor query result, or <c>null</c> if not found.</returns>
     public async Task<SensorQR?> GetByIdAsync(int id)
     {
         const string sql = """
@@ -68,6 +82,11 @@ public class SensorRepository : ISensorRepository
         });
     }
 
+    /// <summary>
+    /// Creates a new sensor and returns the generated identifier.
+    /// </summary>
+    /// <param name="request">The sensor creation request.</param>
+    /// <returns>The identifier of the newly created sensor.</returns>
     public async Task<int> CreateAsync(CreateSensorQR request)
     {
         const string sql = """
@@ -81,6 +100,12 @@ public class SensorRepository : ISensorRepository
         return await connection.ExecuteScalarAsync<int>(sql, request);
     }
 
+    /// <summary>
+    /// Updates an existing sensor.
+    /// </summary>
+    /// <param name="id">The sensor identifier.</param>
+    /// <param name="request">The updated sensor values.</param>
+    /// <returns><c>true</c> if the sensor was updated; otherwise, <c>false</c>.</returns>
     public async Task<bool> UpdateAsync(int id, UpdateSensorQR request)
     {
         const string sql = """
