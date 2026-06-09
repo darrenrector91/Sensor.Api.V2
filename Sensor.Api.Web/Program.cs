@@ -4,6 +4,7 @@ using Sensor.Api.Web.Services.Interfaces;
 
 using Sensor.Api.Data.Repositories;
 using Sensor.Api.Data.Repositories.Interfaces;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+});
 
 builder.Services.AddScoped<IDbContext, DbContext>();
 

@@ -10,11 +10,23 @@ public class SensorMeasurementsController : ControllerBase
 {
     private readonly ISensorMeasurementService sensorMeasurementService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SensorMeasurementsController"/> class.
+    /// </summary>
+    /// <param name="sensorMeasurementService">The sensor measurement service used to manage sensor measurements.</param>
     public SensorMeasurementsController(ISensorMeasurementService sensorMeasurementService)
     {
         this.sensorMeasurementService = sensorMeasurementService;
     }
 
+    /// <summary>
+    /// Gets measurements for a specific sensor within an optional time range.
+    /// </summary>
+    /// <param name="sensorId">The sensor identifier.</param>
+    /// <param name="fromUtc">The optional start of the time range in UTC.</param>
+    /// <param name="toUtc">The optional end of the time range in UTC.</param>
+    /// <param name="limit">The optional maximum number of measurements to return.</param>
+    /// <returns>An <see cref="IActionResult"/> containing the measurements.</returns>
     [HttpGet]
     public async Task<IActionResult> GetMeasurements(
         int sensorId,
@@ -31,6 +43,11 @@ public class SensorMeasurementsController : ControllerBase
         return Ok(measurements);
     }
 
+    /// <summary>
+    /// Gets the latest measurement for a specific sensor.
+    /// </summary>
+    /// <param name="sensorId">The sensor identifier.</param>
+    /// <returns>An <see cref="IActionResult"/> containing the latest measurement or NotFound.</returns>
     [HttpGet("latest")]
     public async Task<IActionResult> GetLatestMeasurement(int sensorId)
     {
@@ -48,6 +65,12 @@ public class SensorMeasurementsController : ControllerBase
         return Ok(measurement);
     }
 
+    /// <summary>
+    /// Creates a measurement for a specific sensor.
+    /// </summary>
+    /// <param name="sensorId">The sensor identifier.</param>
+    /// <param name="request">The measurement creation request.</param>
+    /// <returns>An <see cref="IActionResult"/> with the created measurement result or bad request details.</returns>
     [HttpPost]
     public async Task<IActionResult> CreateMeasurement(
         int sensorId,

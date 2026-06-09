@@ -10,11 +10,20 @@ public class SensorsController : ControllerBase
 {
     private readonly ISensorService sensorService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SensorsController"/> class.
+    /// </summary>
+    /// <param name="sensorService">The sensor service used to manage sensor data.</param>
     public SensorsController(ISensorService sensorService)
     {
         this.sensorService = sensorService;
     }
 
+    /// <summary>
+    /// Gets all sensors for the specified controller.
+    /// </summary>
+    /// <param name="controllerId">The controller identifier.</param>
+    /// <returns>An <see cref="IActionResult"/> containing the list of sensors.</returns>
     [HttpGet]
     public async Task<IActionResult> GetSensorsByControllerId([FromQuery] int controllerId)
     {
@@ -23,6 +32,11 @@ public class SensorsController : ControllerBase
         return Ok(sensors);
     }
 
+    /// <summary>
+    /// Gets a sensor by its identifier.
+    /// </summary>
+    /// <param name="id">The sensor identifier.</param>
+    /// <returns>An <see cref="IActionResult"/> containing the sensor or a NotFound result.</returns>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetSensorById(int id)
     {
@@ -36,6 +50,11 @@ public class SensorsController : ControllerBase
         return Ok(sensor);
     }
 
+    /// <summary>
+    /// Creates a new sensor.
+    /// </summary>
+    /// <param name="request">The sensor creation request.</param>
+    /// <returns>An <see cref="ActionResult"/> with the created sensor identifier.</returns>
     [HttpPost]
     public async Task<ActionResult<int>> CreateSensor(CreateSensorQR request)
     {
@@ -44,6 +63,12 @@ public class SensorsController : ControllerBase
         return CreatedAtAction(nameof(GetSensorById), new { id }, id);
     }
 
+    /// <summary>
+    /// Updates an existing sensor.
+    /// </summary>
+    /// <param name="id">The sensor identifier.</param>
+    /// <param name="request">The updated sensor values.</param>
+    /// <returns>An <see cref="IActionResult"/> indicating the update result.</returns>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateSensor(int id, UpdateSensorQR request)
     {

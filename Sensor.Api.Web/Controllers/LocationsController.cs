@@ -10,11 +10,19 @@ public class LocationsController : ControllerBase
 {
     private readonly ILocationRepository _locationRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LocationsController"/> class.
+    /// </summary>
+    /// <param name="locationRepository">The location repository used to manage locations.</param>
     public LocationsController(ILocationRepository locationRepository)
     {
         _locationRepository = locationRepository;
     }
 
+    /// <summary>
+    /// Gets all locations.
+    /// </summary>
+    /// <returns>An <see cref="ActionResult{T}"/> containing the list of locations.</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LocationQR>>> GetLocations()
     {
@@ -23,6 +31,11 @@ public class LocationsController : ControllerBase
         return Ok(locations);
     }
 
+    /// <summary>
+    /// Gets a location by its identifier.
+    /// </summary>
+    /// <param name="id">The location identifier.</param>
+    /// <returns>An <see cref="ActionResult{LocationQR}"/> containing the location or a NotFound result.</returns>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LocationQR>> GetLocationById(int id)
     {
@@ -36,6 +49,11 @@ public class LocationsController : ControllerBase
         return Ok(location);
     }
 
+    /// <summary>
+    /// Creates a new location.
+    /// </summary>
+    /// <param name="request">The location creation request.</param>
+    /// <returns>An <see cref="ActionResult"/> with the created location identifier.</returns>
     [HttpPost]
     public async Task<ActionResult<int>> CreateLocation(CreateLocationQR request)
     {
@@ -44,6 +62,12 @@ public class LocationsController : ControllerBase
         return CreatedAtAction(nameof(GetLocationById), new { id }, id);
     }
 
+    /// <summary>
+    /// Updates an existing location.
+    /// </summary>
+    /// <param name="id">The location identifier.</param>
+    /// <param name="request">The updated location values.</param>
+    /// <returns>An <see cref="IActionResult"/> indicating the update result.</returns>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateLocation(int id, UpdateLocationQR request)
     {
@@ -57,6 +81,11 @@ public class LocationsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Deletes a location by its identifier.
+    /// </summary>
+    /// <param name="id">The location identifier.</param>
+    /// <returns>An <see cref="IActionResult"/> indicating whether the location was deleted.</returns>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLocation(int id)
     {
