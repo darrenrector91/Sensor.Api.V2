@@ -21,13 +21,14 @@ public class ControllerRepository : IControllerRepository
                 c."ControllerKey",
                 c."Name",
                 c."LocationId",
+                s."Id" AS "SensorId",
                 l."Name" AS "Location",
                 c."IsActive",
-                c."CreatedUtc",
-                COUNT(s."Id") AS "SensorCount"
+                c."CreatedUtc"
             FROM "Controllers" c
             LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
             LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
+            WHERE c."Id" = 1
             GROUP BY
                 c."Id",
                 c."ControllerKey",
@@ -35,7 +36,8 @@ public class ControllerRepository : IControllerRepository
                 c."LocationId",
                 l."Name",
                 c."IsActive",
-                c."CreatedUtc" 
+                c."CreatedUtc",
+                s."Id"
             ORDER BY c."CreatedUtc" ASC;
             """;
 
@@ -48,6 +50,9 @@ public class ControllerRepository : IControllerRepository
 
     public async Task<int> GetControllerKey(int id)
     {
+        // Extracts the trailing number from each ControllerKey, finds the highest value,
+        // defaults to 0 when no matching controllers exist, then adds 1 for the next sequence number.
+        // The lookup is limited to controllers belonging to the specified LocationId.
         const string sql = """
             SELECT COALESCE(
                 MAX(CAST(SUBSTRING("ControllerKey" FROM '^[a-z0-9-]+-([0-9]+)$') AS INTEGER)),
@@ -94,6 +99,7 @@ public class ControllerRepository : IControllerRepository
                 c."Name",
                 l."Name" AS "Location",
                 c."LocationId",
+                s."Id" AS "SensorId",
                 c."IsActive",
                 c."CreatedUtc",
                 COUNT(s."Id") AS "SensorCount"
@@ -108,7 +114,8 @@ public class ControllerRepository : IControllerRepository
                 c."LocationId",
                 l."Name",
                 c."IsActive",
-                c."CreatedUtc" 
+                c."CreatedUtc",
+                s."Id"
             """;
 
         using var connection = _databaseContext.CreateConnection();
