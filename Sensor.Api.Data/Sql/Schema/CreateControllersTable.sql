@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS "Controllers"
+(
+    "Id" SERIAL PRIMARY KEY,
+    "ControllerKey" TEXT NOT NULL UNIQUE,
+    "Name" TEXT NOT NULL,
+    "Location" TEXT NULL,
+    "IsActive" BOOLEAN NOT NULL DEFAULT TRUE,
+    "CreatedUtc" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+);

@@ -16,37 +16,40 @@ public class DashboardRepository : IDashboardRepository
     public async Task<IReadOnlyList<DashboardMeasurementQR>> GetMeasurementsAsync()
     {
         const string sql = """
-        SELECT
-            c."Id" AS "ControllerId",
-            c."ControllerKey",
-            c."Name" AS "ControllerName",
-            l."Name" AS "Location",
-            s."Id" AS "SensorId",
-            s."SensorKey",
-            s."Name" AS "SensorName",
-            s."SensorType",
-            m."MeasurementType",
-            m."Value",
-            m."Unit",
-            mt."Icon" AS "Icon",
-            mt."Color" AS "Color",
-            mt."DisplayStyle" AS "DisplayStyle",
-            mt."ChartGroup" AS "ChartGroup",
-            mt."Priority" AS "Priority",
-            mt."CssClass" AS "CssClass",
-            m."CreatedUtc"
-        FROM "Controllers" c
-        LEFT JOIN "Locations" l
-            ON l."Id" = c."LocationId"
-        INNER JOIN "Sensors" s
-            ON s."ControllerId" = c."Id"
-        INNER JOIN "SensorMeasurements" m
-            ON m."SensorId" = s."Id"
-        LEFT JOIN "MeasurementTypes" mt
-            ON mt."Name" = m."MeasurementType"
-        WHERE c."IsActive" = TRUE
-            AND s."IsActive" = TRUE
-        ORDER BY m."CreatedUtc" DESC;
+            SELECT
+                c."Id" AS "ControllerId",
+                c."ControllerKey",
+                c."Name" AS "ControllerName",
+                l."Id" AS "LocationId",
+                l."Name" AS "LocationName",
+                s."Id" AS "SensorId",
+                s."Name" AS "SensorName",
+                s."HardwareModel",
+                m."MeasurementTypeId",
+                mt."Name" AS "MeasurementType",
+                mt."DisplayName" AS "MeasurementDisplayName",
+                m."Value",
+                m."Unit",
+                mt."Icon",
+                mt."Color",
+                mt."DisplayStyle",
+                mt."ChartGroup",
+                mt."Priority",
+                mt."CssClass",
+                m."CreatedUtc"
+            FROM "Controllers" c
+            LEFT JOIN "Locations" l
+                ON l."Id" = c."LocationId"
+            INNER JOIN "Sensors" s
+                ON s."ControllerId" = c."Id"
+            INNER JOIN "SensorMeasurements" m
+                ON m."SensorId" = s."Id"
+            LEFT JOIN "MeasurementTypes" mt
+                ON mt."Id" = m."MeasurementTypeId"
+            WHERE c."IsActive" = TRUE
+                AND s."IsActive" = TRUE
+                AND mt."IsActive" = TRUE
+            ORDER BY m."CreatedUtc" DESC;
         """;
 
         using var connection = _databaseContext.CreateConnection();

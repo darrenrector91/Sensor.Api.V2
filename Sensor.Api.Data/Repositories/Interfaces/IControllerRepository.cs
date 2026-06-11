@@ -14,5 +14,5 @@ public interface IControllerRepository
 
     Task<int> GetControllerKey(int id);
 
-    Task<int> GetNextControllerSequenceNumberAsync(int locationId);
+    Task<int> GetNextControllerKeySequenceNumberAsync(int locationId);
 }

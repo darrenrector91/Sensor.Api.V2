@@ -8,11 +8,9 @@ public class ControllerQR
 
     public string Name { get; set; } = string.Empty;
 
-    public string? Location { get; set; }
+    public string? LocationName { get; set; }
 
     public int? LocationId { get; set; }
-    
-    public int? SensorId { get; set; }
 
     public bool IsActive { get; set; }
 

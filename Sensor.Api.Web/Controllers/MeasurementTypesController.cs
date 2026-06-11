@@ -45,7 +45,7 @@ public sealed class MeasurementTypesController : ControllerBase
 
             return CreatedAtAction(
                 nameof(GetMeasurementTypes),
-                new { id = measurementType.Id },
+                new { id = measurementType.MeasurementTypeId },
                 measurementType);
         }
         catch (ArgumentException exception)

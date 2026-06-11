@@ -1,9 +1,8 @@
 using Sensor.Api.Data;
-using Sensor.Api.Web.Services;
-using Sensor.Api.Web.Services.Interfaces;
-
 using Sensor.Api.Data.Repositories;
 using Sensor.Api.Data.Repositories.Interfaces;
+using Sensor.Api.Web.Services;
+using Sensor.Api.Web.Services.Interfaces;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +26,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -50,7 +49,6 @@ builder.Services.AddScoped<ISensorMeasurementService, SensorMeasurementService>(
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IMeasurementTypeService, MeasurementTypeService>();
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -58,8 +56,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 app.UseCors(AngularDevCorsPolicy);
 
