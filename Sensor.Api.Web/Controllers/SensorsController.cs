@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Sensor.Api.Core.Requests;
 using Sensor.Api.Data.QueryResults;
 using Sensor.Api.Web.Services.Interfaces;
 
@@ -56,11 +57,11 @@ public class SensorsController : ControllerBase
     /// <param name="request">The sensor creation request.</param>
     /// <returns>An <see cref="ActionResult"/> with the created sensor identifier.</returns>
     [HttpPost]
-    public async Task<ActionResult<int>> CreateSensor(CreateSensorQR request)
+    public async Task<IActionResult> CreateAsync(CreateSensorRequest request)
     {
-        var id = await sensorService.CreateSensorAsync(request);
+        var sensorId = await sensorService.CreateAsync(request);
 
-        return CreatedAtAction(nameof(GetSensorById), new { id }, id);
+        return Created($"/api/sensors/{sensorId}", sensorId);
     }
 
     /// <summary>
@@ -70,7 +71,7 @@ public class SensorsController : ControllerBase
     /// <param name="request">The updated sensor values.</param>
     /// <returns>An <see cref="IActionResult"/> indicating the update result.</returns>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateSensor(int id, UpdateSensorQR request)
+    public async Task<IActionResult> UpdateSensor(int id, UpdateSensorRequest request)
     {
         var updated = await sensorService.UpdateSensorAsync(id, request);
 

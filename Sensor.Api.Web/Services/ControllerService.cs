@@ -37,7 +37,7 @@ public sealed class ControllerService : IControllerService
         var location = await locationRepository.GetLocationByIdAsync(locationId)
             ?? throw new ArgumentException("Location not found", nameof(request.LocationId));
 
-        var keyNumber = await controllerRepository.GetNextControllerSequenceNumberAsync(locationId);
+        var keyNumber = await controllerRepository.GetNextControllerKeySequenceNumberAsync(locationId);
 
         var locationPrefix = location.Name
             .Trim()

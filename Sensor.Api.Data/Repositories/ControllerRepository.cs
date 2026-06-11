@@ -13,6 +13,12 @@ public class ControllerRepository : IControllerRepository
         _databaseContext = databaseContext;
     }
 
+    /// <summary>
+    /// Gets all controllers with their resolved location name and active sensor count.
+    /// </summary>
+    /// <returns>
+    /// A read-only list of controllers ordered by controller name.
+    /// </returns>
     public async Task<IReadOnlyList<ControllerQR>> GetAllControllersAsync()
     {
         const string sql = """
@@ -21,14 +27,16 @@ public class ControllerRepository : IControllerRepository
                 c."ControllerKey",
                 c."Name",
                 c."LocationId",
-                s."Id" AS "SensorId",
-                l."Name" AS "Location",
+                l."Name" AS "LocationName",
                 c."IsActive",
-                c."CreatedUtc"
+                c."CreatedUtc",
+                COUNT(s."Id") AS "SensorCount"
             FROM "Controllers" c
-            LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
-            LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
-            WHERE c."Id" = 1
+            LEFT JOIN "Locations" l
+                ON l."Id" = c."LocationId"
+            LEFT JOIN "Sensors" s
+                ON s."ControllerId" = c."Id"
+                AND s."IsActive" = TRUE
             GROUP BY
                 c."Id",
                 c."ControllerKey",
@@ -36,10 +44,9 @@ public class ControllerRepository : IControllerRepository
                 c."LocationId",
                 l."Name",
                 c."IsActive",
-                c."CreatedUtc",
-                s."Id"
-            ORDER BY c."CreatedUtc" ASC;
-            """;
+                c."CreatedUtc"
+            ORDER BY c."Name";
+        """;
 
         using var connection = _databaseContext.CreateConnection();
 
@@ -47,7 +54,13 @@ public class ControllerRepository : IControllerRepository
 
         return controllers.ToList();
     }
-
+    /// <summary>
+    /// Gets the next controller key sequence number for the specified location.
+    /// </summary>
+    /// <param name="id">The location identifier used to scope the controller key sequence.</param>
+    /// <returns>
+    /// The next available controller key sequence number for the location.
+    /// </returns>
     public async Task<int> GetControllerKey(int id)
     {
         // Extracts the trailing number from each ControllerKey, finds the highest value,
@@ -69,6 +82,13 @@ public class ControllerRepository : IControllerRepository
         return result ?? 0;
     }
 
+    /// <summary>
+    /// Gets the highest existing controller key sequence number for the specified location.
+    /// </summary>
+    /// <param name="locationId">The location identifier used to scope the controller key sequence lookup.</param>
+    /// <returns>
+    /// The highest existing controller key sequence number for the location, or zero when none exist.
+    /// </returns>
     public async Task<int> GetNextControllerSequenceNumberAsync(int locationId)
     {
         const string sql = """
@@ -90,6 +110,17 @@ public class ControllerRepository : IControllerRepository
         return await connection.ExecuteScalarAsync<int>(sql, new { LocationId = locationId });
     }
 
+    // Backwards-compatible shim for callers using the previous method name.
+    public Task<int> GetNextControllerKeySequenceNumberAsync(int locationId)
+        => GetNextControllerSequenceNumberAsync(locationId);
+
+    /// <summary>
+    /// Gets a single controller by identifier, including its resolved location name and active sensor count.
+    /// </summary>
+    /// <param name="id">The controller identifier.</param>
+    /// <returns>
+    /// The matching controller when found; otherwise, null.
+    /// </returns>
     public async Task<ControllerQR?> GetControllerByIdAsync(int id)
     {
         const string sql = """
@@ -97,15 +128,17 @@ public class ControllerRepository : IControllerRepository
                 c."Id",
                 c."ControllerKey",
                 c."Name",
-                l."Name" AS "Location",
                 c."LocationId",
-                s."Id" AS "SensorId",
+                l."Name" AS "LocationName",
                 c."IsActive",
                 c."CreatedUtc",
                 COUNT(s."Id") AS "SensorCount"
             FROM "Controllers" c
-            LEFT JOIN "Locations" l ON l."Id" = c."LocationId"
-            LEFT JOIN public."Sensors" s ON s."ControllerId" = c."Id"
+            LEFT JOIN "Locations" l
+                ON l."Id" = c."LocationId"
+            LEFT JOIN "Sensors" s
+                ON s."ControllerId" = c."Id"
+                AND s."IsActive" = TRUE
             WHERE c."Id" = @Id
             GROUP BY
                 c."Id",
@@ -114,8 +147,7 @@ public class ControllerRepository : IControllerRepository
                 c."LocationId",
                 l."Name",
                 c."IsActive",
-                c."CreatedUtc",
-                s."Id"
+                c."CreatedUtc";
             """;
 
         using var connection = _databaseContext.CreateConnection();
@@ -125,6 +157,13 @@ public class ControllerRepository : IControllerRepository
             new { Id = id });
     }
 
+    /// <summary>
+    /// Creates a new controller and returns its generated identifier.
+    /// </summary>
+    /// <param name="request">The controller values to create.</param>
+    /// <returns>
+    /// The generated controller identifier.
+    /// </returns>
     public async Task<int> CreateAsync(CreateControllerQR request)
     {
         const string sql = """
@@ -138,6 +177,14 @@ public class ControllerRepository : IControllerRepository
         return await connection.ExecuteScalarAsync<int>(sql, request);
     }
 
+    /// <summary>
+    /// Updates an existing controller.
+    /// </summary>
+    /// <param name="id">The controller identifier.</param>
+    /// <param name="request">The updated controller values.</param>
+    /// <returns>
+    /// True when the controller was updated; otherwise, false.
+    /// </returns>
     public async Task<bool> UpdateAsync(int id, UpdateControllerQR request)
     {
         const string sql = """

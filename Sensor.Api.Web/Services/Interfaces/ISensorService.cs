@@ -1,3 +1,4 @@
+using Sensor.Api.Core.Requests;
 using Sensor.Api.Data.QueryResults;
 using Sensor.Api.Web.Models;
 
@@ -9,7 +10,9 @@ public interface ISensorService
 
     Task<SensorResponse?> GetSensorByIdAsync(int id);
 
-    Task<int> CreateSensorAsync(CreateSensorQR request);
+    Task<int> CreateAsync(CreateSensorRequest request);
 
-    Task<bool> UpdateSensorAsync(int id, UpdateSensorQR request);
+    Task<bool> UpdateSensorAsync(int id, UpdateSensorRequest request);
+
+    Task<IEnumerable<SensorMeasurementTypeQR>> GetMeasurementTypesBySensorIdAsync(int sensorId);
 }
