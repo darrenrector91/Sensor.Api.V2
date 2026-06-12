@@ -1,6 +1,6 @@
 # Sensor.Api - MASTER PROJECT STATUS
 
-Last Updated: 2026-06-11
+Last Updated: 2026-06-08
 
 ---
 
@@ -8,20 +8,17 @@ Last Updated: 2026-06-11
 
 Sensor.Api is the backend platform for the generalized IoT sensor system.
 
-The API receives sensor measurements from ESP32 devices, stores them in PostgreSQL, and serves controller, sensor, location, measurement type, measurement, and dashboard data to the Angular frontend.
+The API receives sensor measurements from ESP32 devices, stores them in PostgreSQL, and serves controller, sensor, location, measurement, and dashboard data to the Angular frontend.
 
 The platform has evolved from a hardcoded temperature/humidity design into a generalized:
 
-```text
 Controller
--> Sensor hardware
--> Measurement types
--> Measurements
-```
+-> Sensor
+-> Measurement
 
 architecture.
 
-The backend is operating with production-style layering and should be extended rather than redesigned.
+The backend is already operating with production-style layering and should be extended rather than redesigned.
 
 ---
 
@@ -60,13 +57,11 @@ Solution projects:
 
 Current layered architecture:
 
-```text
 Controller
 -> IService
 -> Service
 -> IRepository
 -> Repository
-```
 
 Responsibilities:
 
@@ -76,7 +71,6 @@ Controller:
 - model binding
 - response codes
 - thin request handling
-- inject services only
 
 Service:
 
@@ -85,7 +79,6 @@ Service:
 - orchestration
 - normalization
 - response shaping
-- calls repositories
 
 Repository:
 
@@ -95,7 +88,7 @@ Repository:
 
 Repositories should NOT contain business rules.
 
-Controllers should NOT inject repositories directly.
+Controllers should inject services only.
 
 ---
 
@@ -113,19 +106,16 @@ Primary active tables:
 
 - Controllers
 - Sensors
-- SensorMeasurementTypes
 - SensorMeasurements
 - MeasurementTypes
 - Locations
 
 Removed legacy tables:
 
-- SensorReadings
-- SensorReadingsV2
+- SensorReadings (dropped)
+- SensorReadingsV2 (abandoned and never adopted)
 
-SensorMeasurements is the active measurement data table.
-
-SensorMeasurementTypes is the join table that defines which measurement types each physical sensor supports.
+SensorMeasurements is the sole source of truth for sensor measurement data.
 
 ---
 
@@ -133,35 +123,22 @@ SensorMeasurementTypes is the join table that defines which measurement types ea
 
 Preferred architecture:
 
-```text
 Controller
--> Sensor hardware
--> Supported MeasurementTypes
--> SensorMeasurements
-```
+-> Sensor
+-> Measurement
 
-Important naming distinction:
+Measurements are generalized rows:
 
-- Sensor hardware/model examples: SHT35, DS18B20, BME280, capacitive soil moisture sensor
-- Measurement type examples: Temperature, Humidity, SoilMoisture, SoilTemperature, BatteryVoltage
-- Sensor instance examples: Deck SHT35, Basement SHT35, Tomato Soil Probe
-
-A physical sensor can support multiple measurement types.
-
-Example:
-
-```text
-SHT35
-- Temperature
-- Humidity
-```
+- MeasurementType
+- Value
+- Unit
+- CreatedUtc
 
 The system intentionally supports:
 
 - Temperature
 - Humidity
 - Soil moisture
-- Soil temperature
 - Light
 - Battery voltage
 - Water level
@@ -169,115 +146,34 @@ The system intentionally supports:
 - Door state
 - Future measurement types
 
-without creating new measurement tables for each reading type.
-
----
-
-# Current Sensor Model
-
-Sensors now represent physical sensor hardware connected to a controller.
-
-Current Sensors direction:
-
-- Id
-- ControllerId
-- LocationId
-- Name
-- HardwareModel
-- Description
-- CommunicationProtocol
-- Address
-- MeasurementIntervalSeconds
-- Notes
-- IsActive
-- CreatedUtc
-
-Removed sensor fields:
-
-- SensorKey
-- SensorType
-
-SensorType was replaced by HardwareModel.
-
-SensorKey was removed because grouping is handled better by ControllerId, LocationId, HardwareModel, and SensorMeasurementTypes.
-
-Sensor create/update request models include:
-
-- MeasurementTypeIds
-
-These IDs are not stored on the Sensors table. They are stored through SensorMeasurementTypes.
-
----
-
-# Current SensorMeasurementTypes Model
-
-SensorMeasurementTypes maps physical sensors to the measurement types they support.
-
-Schema direction:
-
-- SensorId
-- MeasurementTypeId
-
-Examples:
-
-```text
-Deck SHT35 -> Temperature
-Deck SHT35 -> Humidity
-Soil Probe -> SoilMoisture
-Soil Probe -> SoilTemperature
-```
-
-Create and update sensor workflows should:
-
-1. Save/update the Sensors row.
-2. Replace or insert SensorMeasurementTypes rows inside the same transaction.
+without schema redesign.
 
 ---
 
 # Current Measurement Model
 
-Current measurement pipeline still supports generalized measurement rows.
-
-Target SensorMeasurements schema:
+Current SensorMeasurements schema:
 
 - Id
 - SensorId
-- MeasurementTypeId
+- MeasurementType
 - Value
 - Unit
 - CreatedUtc
 
-Legacy/current transition note:
+Important architecture rule:
 
-- Some code or local data may still reference MeasurementType as text while the refactor is being completed.
-- The intended direction is MeasurementTypeId with a foreign key to MeasurementTypes.
-- Dashboard and history queries should join MeasurementTypes by Id once the measurement write path is fully converted.
-
-Preferred target query pattern:
-
-```sql
-LEFT JOIN "MeasurementTypes" mt
-    ON mt."Id" = m."MeasurementTypeId"
-```
-
-Legacy temporary query pattern:
-
-```sql
-LEFT JOIN "MeasurementTypes" mt
-    ON mt."Name" = m."MeasurementType"
-```
-
-Use the target pattern after SensorMeasurements has MeasurementTypeId.
+- Value intentionally remains a string
+- Numeric parsing belongs only in chart/statistics-specific logic
 
 ---
 
 # Current MeasurementTypes Direction
 
-MeasurementTypes is the source of truth for frontend display metadata.
+MeasurementTypes is now the intended source of truth for frontend display metadata.
 
-MeasurementTypes fields currently include:
+MeasurementTypes fields:
 
-- Id
 - Name
 - DisplayName
 - DefaultUnit
@@ -287,11 +183,6 @@ MeasurementTypes fields currently include:
 - CssClass
 - AccentColor
 - Description
-- IsActive
-- CreatedUtc
-- Color
-- DisplayStyle
-- ChartGroup
 
 MeasurementTypes should drive:
 
@@ -301,14 +192,11 @@ MeasurementTypes should drive:
 - chart grouping
 - priority
 - css styling
-- default units
-- frontend card/chart rendering behavior
 
-Angular should stop hardcoding:
+Angular should eventually stop hardcoding:
 
 - temperature display config
 - humidity display config
-- measurement-specific dashboard styling
 
 ---
 
@@ -323,14 +211,6 @@ Implemented:
 - POST /api/controllers
 - PUT /api/controllers/{id}
 
-Controller list/detail queries should return one row per controller.
-
-When joining sensors for controller cards, use aggregation:
-
-- COUNT(s."Id") AS "SensorCount"
-
-Do not return one controller row per sensor.
-
 ---
 
 ## Sensors
@@ -341,27 +221,6 @@ Implemented:
 - GET /api/sensors/{id}
 - POST /api/sensors
 - PUT /api/sensors/{id}
-
-Sensor create/update supports:
-
-- physical hardware fields
-- LocationId
-- MeasurementTypeIds
-- SensorMeasurementTypes mapping
-
-Sensor responses should use:
-
-- HardwareModel
-- LocationName
-- CommunicationProtocol
-- Address
-- MeasurementIntervalSeconds
-- Notes
-
-Sensor responses should NOT use:
-
-- SensorKey
-- SensorType
 
 ---
 
@@ -380,9 +239,7 @@ History endpoint supports:
 - toUtc
 - limit
 
-Range-aware history querying is implemented.
-
-Measurement write/read code should be reviewed during the MeasurementTypeId migration.
+Range-aware history querying is already implemented.
 
 ---
 
@@ -393,9 +250,7 @@ Implemented:
 - GET /api/measurement-types
 - POST /api/measurement-types
 
-MeasurementTypes table exists and is seeded.
-
-MeasurementTypes are now also used to define valid measurement capabilities for sensors through SensorMeasurementTypes.
+MeasurementTypes table already exists and is seeded.
 
 ---
 
@@ -409,18 +264,11 @@ Implemented:
 - PUT /api/locations/{id}
 - DELETE /api/locations/{id}
 
-Locations are relational and integrated into:
+Locations are relational and already integrated into:
 
 - Controllers
 - Sensors
 - Dashboard queries
-
-Location display should use:
-
-- LocationId
-- LocationName
-
-Avoid ambiguous response property names like Location when LocationName is clearer.
 
 ---
 
@@ -438,16 +286,16 @@ Implemented:
 Controllers:
 
 - LocationId
-- resolved LocationName through LEFT JOIN
+- resolved Location name
 
 Sensors:
 
 - LocationId
-- resolved LocationName through LEFT JOIN
+- resolved Location name
 
 Dashboard measurements:
 
-- resolve LocationName through LEFT JOIN
+- resolve location through LEFT JOIN
 
 Important PostgreSQL rule:
 quoted identifiers are required.
@@ -473,83 +321,33 @@ Current repositories:
 
 Repository interfaces exist and are wired through services.
 
-Important repository rules:
-
-- Controller repositories should not return duplicate controller rows because of sensor joins.
-- Use COUNT/GROUP BY for controller sensor counts.
-- Sensor create/update should use transactions when writing SensorMeasurementTypes.
-- Repositories should not shape business rules.
-
 ---
 
-# Current QueryResults and Request DTO State
+# Current QueryResults State
 
 The project intentionally uses:
 
 - QueryResults
 
-folder naming for database projection models.
+folder naming.
 
 DO NOT:
 
 - rename QueryResults
 - replace QueryResults
-- introduce a QueryRequests folder
-
-Current direction:
-
-- QueryResults contains returned database projection models.
-- Request DTOs belong in Sensor.Api.Core/Requests.
-
-Sensor request DTO cleanup has started.
-
-Current request DTO direction:
-
-- Sensor.Api.Core/Requests/CreateSensorRequest.cs
-- Sensor.Api.Core/Requests/UpdateSensorRequest.cs
-
-Sensor QR/query models remain in:
-
-- Sensor.Api.Data/QueryResults/SensorQR.cs
-- Sensor.Api.Data/QueryResults/SensorMeasurementQR.cs
-- Sensor.Api.Data/QueryResults/DashboardMeasurementQR.cs
-- Sensor.Api.Data/QueryResults/MeasurementTypeQR.cs
-- Sensor.Api.Data/QueryResults/SensorMeasurementTypeQR.cs
+- introduce QueryRequests folder
 
 Known technical debt:
+request DTOs currently live inside QueryResults naming.
 
-- Some older request DTOs may still use QR naming.
-- Continue moving request models to Core/Requests as they are touched.
-- Do not create a QueryRequests folder.
+Examples:
 
----
+- CreateControllerQR
+- UpdateControllerQR
+- CreateSensorQR
+- UpdateSensorRequest
 
-# Current API Response Naming Direction
-
-Preferred response fields:
-
-- LocationId
-- LocationName
-- HardwareModel
-- MeasurementTypeId
-- MeasurementType
-- MeasurementDisplayName
-- SensorCount
-
-Avoid old response fields:
-
-- SensorKey
-- SensorType
-- Location when LocationName is intended
-
-Dashboard measurement responses should include measurement metadata when available:
-
-- Icon
-- Color
-- DisplayStyle
-- ChartGroup
-- Priority
-- CssClass
+This cleanup is deferred and NOT a current priority.
 
 ---
 
@@ -701,22 +499,12 @@ ESP32 currently:
 - posts Temperature
 - posts Humidity
 
-Current/legacy payload shape:
+Current payload shape:
 
 ```json
 {
   "measurementType": "Temperature",
   "value": "22.6",
-  "unit": "C"
-}
-```
-
-Target payload shape after measurement write-path refactor:
-
-```json
-{
-  "measurementTypeId": 1,
-  "value": 22.6,
   "unit": "C"
 }
 ```
@@ -738,9 +526,11 @@ Validated Behavior:
 
 - ESP32 posts once per hour
 - Temperature and Humidity are stored as separate rows
-- SensorMeasurements contains the active measurement data
-- Historical 2-minute readings originated from removed legacy SensorReadings data
+- SensorMeasurements contains the active production data
+- Historical 2-minute readings originated from the removed legacy SensorReadings table
 - Current SensorMeasurements data has been verified as hourly
+
+The generalized backend pipeline is already functioning.
 
 ---
 
@@ -778,6 +568,144 @@ Angular Sensor model direction:
 - isActive
 - createdUtc
 
+The backend APIs already support this direction.
+
+---
+
+# Current Angular API Configuration
+
+Angular should not hardcode backend URLs inside individual services.
+
+Current direction:
+
+- Environment files define the backend host.
+- A shared API_BASE_URL injection token appends `/api`.
+- Angular services inject API_BASE_URL and append endpoint-specific routes.
+
+Local development:
+
+```ts
+// environment.development.ts
+export const environment = {
+  apiBaseUrl: 'http://localhost:5278',
+  location: {
+    latitude: 45.15933196113098,
+    longitude: -93.40220163549854,
+  },
+};
+```
+
+Pi/production deployment:
+
+```ts
+// environment.ts
+export const environment = {
+  apiBaseUrl: 'http://192.168.5.103:5278',
+  location: {
+    latitude: 45.15933196113098,
+    longitude: -93.40220163549854,
+  },
+};
+```
+
+Shared API token:
+
+```text
+src/app/core/api/api-url.token.ts
+```
+
+Services should use:
+
+```ts
+private readonly apiBaseUrl = inject(API_BASE_URL);
+```
+
+Services should NOT use hardcoded URLs like:
+
+```text
+http://192.168.5.103:5278/api
+```
+
+inside the service class.
+
+Preferred frontend flow:
+
+```text
+environment.ts / environment.development.ts
+-> API_BASE_URL token
+-> Angular services
+-> Components
+```
+
+Avoid:
+
+- hardcoded backend URLs inside services
+- manual switching between localhost and Pi URLs by commenting/uncommenting code
+- service-specific API base URL duplication
+
+---
+
+# Local vs Raspberry Pi Debugging Rule
+
+When debugging Angular locally, confirm the browser is calling the local backend.
+
+Expected local request:
+
+```text
+http://localhost:5278/api/controllers
+```
+
+Unexpected Pi request during local debugging:
+
+```text
+http://192.168.5.103:5278/api/controllers
+```
+
+If Angular is still calling the Pi:
+
+1. Check `environment.development.ts`.
+2. Check for hardcoded service URLs.
+3. Restart Angular dev server.
+4. Restart the TypeScript server if Angular/TypeScript does not recognize new files.
+5. Check DevTools Network tab and confirm the Request URL.
+
+Port conflict reminder:
+
+If backend debugging fails with port 5278 already in use, run:
+
+```bash
+lsof -i :5278
+```
+
+Then stop the existing process before starting the debugger.
+
+---
+
+# Recent Frontend Location Rendering Fix
+
+Issue:
+
+- Backend returned `locationName` correctly.
+- Controller cards still displayed `No location`.
+- The frontend was calling the Raspberry Pi backend instead of the local backend because `DeviceAdminService` had a hardcoded Pi API URL.
+
+Fix:
+
+- Removed the hardcoded Pi API URL from `DeviceAdminService`.
+- Added the shared API_BASE_URL token.
+- Updated Angular service API configuration to use environment-based URLs.
+- Confirmed `/api/controllers` returns:
+  - locationId
+  - locationName
+  - sensorCount
+
+Verification:
+
+1. Open DevTools Network tab.
+2. Confirm `/api/controllers` calls `localhost` during local development.
+3. Confirm response includes `locationName`.
+4. Confirm controller cards render the location name instead of `No location`.
+
 ---
 
 # Current Angular Admin Status
@@ -786,6 +714,9 @@ Completed/recently stabilized:
 
 - Location Create workflow
 - Controller list rendering after backend refactor
+- Controller card location display
+- Environment-based API URL handling
+- Shared API_BASE_URL token
 - Sensor data rendering after backend refactor
 - Sensor create/update request shape
 - Connected sensors line/table model cleanup
@@ -819,14 +750,12 @@ The following systems already exist and should NOT be recreated:
 - MeasurementTypes API
 - grouped dashboard aggregation
 - sensor history pipeline
-- sensor provisioning create/update path
-- SensorMeasurementTypes capability mapping
 
 Before creating new systems:
 
-1. Verify the capability does not already exist.
-2. Extend existing architecture first.
-3. Avoid parallel implementations.
+1. Verify the capability does not already exist
+2. Extend existing architecture first
+3. Avoid parallel implementations
 
 ---
 
@@ -834,15 +763,12 @@ Before creating new systems:
 
 Current technical debt:
 
-- remaining old request DTO naming in some areas
-- possible remaining SensorKey/SensorType references in Angular or older queries
+- request DTO naming inside QueryResults
 - SensorReadingsV2 artifacts/documentation cleanup
 - hardcoded firmware sensorId
 - frontend partially hardcoded for display metadata
-- SensorMeasurements MeasurementType string to MeasurementTypeId migration may still need final write-path completion
-- measurement value type consistency between database, DTOs, and charting code
 
-Technical debt should NOT interrupt current feature completion unless it blocks build/runtime stability.
+Technical debt should NOT interrupt current feature completion.
 
 ---
 
@@ -850,10 +776,9 @@ Technical debt should NOT interrupt current feature completion unless it blocks 
 
 Current milestone:
 
-- stabilize sensor provisioning after backend refactor
 - stabilize MeasurementTypes integration
 - support frontend metadata-driven rendering
-- support setup/provisioning workflows
+- support provisioning/setup workflows
 - maintain stable generalized measurement architecture
 
 Current backend architecture is considered stable.
@@ -870,12 +795,13 @@ Explicitly deferred:
 - advanced analytics
 - pagination
 - infrastructure automation
+- DTO restructuring
 - deployment pipelines
 - large-scale cleanup
 - architecture rewrites
 - overengineering
 
-Do NOT prioritize broad cleanup over feature completion.
+Do NOT prioritize cleanup over feature completion.
 
 ---
 
@@ -888,7 +814,6 @@ Examples:
 - feature/location-management
 - feature/angular-measurement-type-config
 - feature/sensor-provisioning
-- feature/sensor-measurement-type-refactor
 
 Keep branches:
 
@@ -924,41 +849,6 @@ curl http://localhost:5278/api/dashboard/measurements
 curl http://localhost:5278/api/measurement-types
 curl http://localhost:5278/api/controllers
 curl http://localhost:5278/api/locations
-curl http://localhost:5278/api/controllers/1/sensors
-```
-
-SQL validation examples:
-
-```sql
-SELECT *
-FROM "Controllers";
-
-SELECT *
-FROM "Sensors";
-
-SELECT *
-FROM "SensorMeasurementTypes";
-
-SELECT *
-FROM "MeasurementTypes";
-
-SELECT *
-FROM "SensorMeasurements";
-```
-
-Controller list/card query rule:
-
-```text
-Controller cards should show one row per controller.
-Use COUNT(s."Id") AS "SensorCount" when joining Sensors.
-```
-
-Sensor create/update rule:
-
-```text
-MeasurementTypeIds belongs to the request model.
-Do not add MeasurementTypeIds as a Sensors table column.
-Persist supported measurement types in SensorMeasurementTypes.
 ```
 
 ---
